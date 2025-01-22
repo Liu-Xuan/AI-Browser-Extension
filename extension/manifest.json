@@ -1,49 +1,54 @@
 {
   "manifest_version": 3,
-  "name": "AI Browser Extension",
+  "name": "AI Assistant",
   "version": "1.0",
-  "description": "An AI-powered browser extension for text processing and knowledge management",
+  "description": "智能文本处理助手 - 提供翻译、摘要、问答功能",
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "ui/popup.html",
+    "default_icon": {
+      "16": "assets/icons/icon16.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    }
+  },
   "permissions": [
     "activeTab",
-    "tabs",
-    "scripting",
-    "webRequest",
-    "downloads",
-    "sidePanel"
+    "storage",
+    "contextMenus",
+    "sidePanel",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost:8000/*",
+    "https://*/*",
+    "http://*/*"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "core/background.js",
+    "type": "module"
   },
   "content_scripts": [
     {
-      "matches": ["*://*/*"],
-      "js": ["content_script.js"]
-    },
-    {
-      "matches": ["*://*/*"],
-      "js": ["tools/pdf/content-script.js"],
-      "type": "module"
+      "matches": ["<all_urls>"],
+      "js": ["core/content-script.js"],
+      "css": ["ui/styles.css"]
     }
   ],
-  "action": {
-    "default_popup": "popup.html"
-  },
   "side_panel": {
-    "default_path": "sidepanel.html"
+    "default_path": "ui/sidepanel.html"
   },
-  "host_permissions": [
-    "http://tdms.airchina.com/*",
-    "https://tdms.airchina.com/*",
-    "http://172.19.12.146:8888/*",
-    "https://*/*",
-    "http://*/*",
-    "*://*.airchina.com/*",
-    "*://*.tdms.airchina.com/*",
-    "*://*/*.pdf"
-  ],
   "web_accessible_resources": [
     {
-      "resources": ["tools/pdf/*", "lib/*"],
+      "resources": [
+        "core/*",
+        "ui/*",
+        "assets/*"
+      ],
       "matches": ["<all_urls>"]
     }
   ]

@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // 使用 chrome.sidePanel.setOptions() 设置侧边栏
       chrome.sidePanel.setOptions({
         enabled: true,
-        path: 'sidepanel.html'
+        path: 'ui/sidepanel.html'
       }).then(() => {
         // 关闭弹出窗口
         window.close();

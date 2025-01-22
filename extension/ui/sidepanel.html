@@ -2,7 +2,9 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <title>AI Assistant</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
     <style>
         body {
             margin: 0;
@@ -488,17 +490,24 @@
         <div class="qa-container">
             <div class="qa-tools">
                 <select id="agentSelector" class="agent-selector">
-                    <option value="">直接对话（Qwen）</option>
-                    <!-- Agent 列表将通过 JavaScript 动态加载 -->
+                    <option value="ollama">本地 Qwen2.5 (Ollama)</option>
+                    <option value="gpt4">OpenAI GPT-4</option>
+                    <option value="deepseek-v3">DeepSeek V3</option>
+                    <option value="deepseek-r1">DeepSeek R1</option>
+                    <option value="macstudio-qwen">MacStudio Qwen2.5</option>
                 </select>
-                <button id="btnUseContext" class="secondary-button" title="使用当前页面作为背景">
+                <button id="btnToggleContext" class="btn-toggle-context" title="使用当前页面作为对话背景">
                     <i class="fas fa-file-import"></i>
+                    使用当前页面作为上下文
                 </button>
             </div>
             <div class="qa-messages" id="qaMessages"></div>
             <div class="qa-input-container">
                 <input type="text" id="qaInput" placeholder="输入问题...">
-                <button id="btnAsk">发送</button>
+                <button id="btnAsk" class="btn-send">
+                    <i class="fas fa-paper-plane"></i>
+                    发送
+                </button>
             </div>
         </div>
     </div>
@@ -512,26 +521,14 @@
                 <button id="btnAddToKB" class="secondary">添加当前页面</button>
                 <button id="btnDeleteFromKB" class="danger">删除选中文档</button>
                 <button id="btnRefresh" class="refresh-button" title="刷新">
-                    <i>🔄</i>
+                    <i class="fas fa-sync"></i>
                     刷新
                 </button>
             </div>
             <div class="kb-content">
                 <div class="kb-tree-container">
-                    <div class="kb-tree" id="kbTree">
-                        <!-- 知识库列表将通过JavaScript动态生成 -->
-                    </div>
-                    <div class="kb-docs" id="kbDocs">
-                        <!-- 文档列表将通过JavaScript动态生成 -->
-                    </div>
-                </div>
-                <div class="chat-container">
-                    <iframe
-                        id="chatFrame"
-                        class="chat-frame"
-                        src="http://172.19.12.146:8888/chat/share?shared_id=8afacc70d3c811efa8bc0242ac120006&from=agent&auth=Y1ZDhlMGEwZDNiZDExZWY4MjEzMDI0Mm"
-                        frameborder="0"
-                    ></iframe>
+                    <div class="kb-tree" id="kbTree"></div>
+                    <div class="kb-docs" id="kbDocs"></div>
                 </div>
             </div>
         </div>
@@ -543,40 +540,22 @@
             <div class="tool-item" data-tool="pdf">
                 <i class="fas fa-file-pdf"></i>
                 <span>PDF 解析</span>
+                <div class="tool-description">PDF文档解析和处理</div>
             </div>
-            <div class="tool-item">
-                <div class="tool-icon">🔍</div>
+            <div class="tool-item" data-tool="search">
+                <i class="fas fa-search"></i>
                 <span>智能搜索</span>
                 <div class="tool-description">快速搜索文档内容</div>
             </div>
-            <div class="tool-item">
-                <div class="tool-icon">📝</div>
-                <span>TDMS 助手</span>
-                <div class="tool-description">TDMS 系统辅助工具</div>
-            </div>
-            <div class="tool-item">
-                <div class="tool-icon">🎯</div>
-                <span>LCM 助手</span>
-                <div class="tool-description">LCM 系统辅助工具</div>
-            </div>
-            <div class="tool-item">
-                <div class="tool-icon">📊</div>
-                <span>数据分析</span>
-                <div class="tool-description">数据分析和可视化</div>
-            </div>
-            <div class="tool-item">
-                <div class="tool-icon">🔄</div>
+            <div class="tool-item" data-tool="format">
+                <i class="fas fa-sync"></i>
                 <span>格式转换</span>
                 <div class="tool-description">文件格式转换工具</div>
             </div>
         </div>
-        
-        <!-- 工具内容区域 -->
-        <div class="tool-content" id="toolContent">
-            <!-- 工具的具体内容将通过 JavaScript 动态加载 -->
-        </div>
+        <div id="toolContent" class="tool-content"></div>
     </div>
 
-    <script src="sidepanel.js"></script>
+    <script src="sidepanel.js" type="module"></script>
 </body>
 </html> 

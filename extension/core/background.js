@@ -370,31 +370,32 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         });
                     }
                 } else {
-                    console.log('使用 Qwen 进行对话');
-                    // 使用 Qwen 进行对话
-                    if (context) {
-                        messages = [{
-                            role: 'system',
-                            content: `以下是当前网页的内容，请基于这些信息回答用户的问题：\n\n${context}`
-                        }, ...messages];
-                    }
-
-                    console.log('发送到 Ollama 的消息:', messages);
+                    // 使用 Ollama 进行对话
+                    console.log('使用 Ollama 进行对话');
                     try {
-                        const response = await fetch(`${QWEN_API_URL}/chat`, {
+                        // 构建请求体
+                        const requestBody = {
+                            model: "qwen",
+                            messages: messages,
+                            stream: false
+                        };
+
+                        if (context) {
+                            // 如果有上下文，添加到系统消息中
+                            requestBody.messages.unshift({
+                                role: 'system',
+                                content: `请基于以下内容回答用户的问题：\n\n${context}`
+                            });
+                        }
+
+                        console.log('发送到 Ollama 的请求:', requestBody);
+
+                        const response = await fetch('http://localhost:11434/api/chat', {
                             method: 'POST',
-                            headers: qwenHeaders,
-                            mode: 'cors',
-                            credentials: 'omit',
-                            body: JSON.stringify({
-                                model: 'qwen2.5:32b',
-                                messages: messages.map(msg => ({
-                                    role: msg.role === 'user' ? 'user' : 'assistant',
-                                    content: msg.content
-                                })),
-                                stream: false,
-                                format: 'json'
-                            })
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(requestBody)
                         });
 
                         if (!response.ok) {
@@ -405,6 +406,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
                         const result = await response.json();
                         console.log('Ollama 响应:', result);
+                        
                         if (result.message && result.message.content) {
                             sendResponse({ 
                                 success: true, 
