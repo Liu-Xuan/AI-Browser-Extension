@@ -1,0 +1,6 @@
+mkdir ai-browser-extension
+cd ai-browser-extension
+git init
+
+# 创建主要目录
+mkdir -p extension server tests .github/workflows 

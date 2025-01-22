@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <metadata>
+        <name>AI Browser Extension</name>
+        <version>1.0</version>
+        <description>一个基于 AI 的浏览器扩展，用于文本处理和知识管理</description>
+        <last_update>2024-03-21</last_update>
+    </metadata>
+
+    <directory_structure>
+        <directory name="extension" description="扩展主目录">
+            <file name="manifest.json" description="扩展配置文件">
+                <features>
+                    <feature>Manifest V3 配置</feature>
+                    <feature>权限和资源声明</feature>
+                    <feature>侧边栏和弹出窗口配置</feature>
+                </features>
+            </file>
+            <file name="background.js" description="后台服务脚本">
+                <features>
+                    <feature>处理消息通信</feature>
+                    <feature>API 请求处理</feature>
+                    <feature>Agent 调用逻辑</feature>
+                </features>
+            </file>
+            <file name="sidepanel.js" description="侧边栏脚本">
+                <features>
+                    <feature>智能助手功能</feature>
+                    <feature>知识库管理</feature>
+                    <feature>工具箱功能</feature>
+                </features>
+            </file>
+            <file name="sidepanel.html" description="侧边栏界面">
+                <features>
+                    <feature>三个主要标签页：智能助手、知识库、工具箱</feature>
+                    <feature>响应式布局和样式</feature>
+                </features>
+            </file>
+            <file name="popup.js" description="弹出窗口脚本">
+                <features>
+                    <feature>快速访问功能</feature>
+                    <feature>文本处理操作</feature>
+                </features>
+            </file>
+            <file name="popup.html" description="弹出窗口界面">
+                <features>
+                    <feature>简洁的操作界面</feature>
+                    <feature>基础功能入口</feature>
+                </features>
+            </file>
+            <file name="content_script.js" description="内容注入脚本">
+                <features>
+                    <feature>页面内容处理</feature>
+                    <feature>与扩展通信</feature>
+                </features>
+            </file>
+            
+            <directory name="tools" description="工具模块目录">
+                <directory name="pdf" description="PDF 工具模块">
+                    <file name="ui.js" description="PDF 工具界面">
+                        <features>
+                            <feature>PDF 解析界面</feature>
+                            <feature>结果展示</feature>
+                        </features>
+                    </file>
+                    <file name="parser.js" description="PDF 解析核心">
+                        <features>
+                            <feature>PDF 内容提取</feature>
+                            <feature>元数据解析</feature>
+                        </features>
+                    </file>
+                    <file name="content-script.js" description="PDF 内容脚本">
+                        <features>
+                            <feature>PDF 页面检测</feature>
+                            <feature>内容获取</feature>
+                        </features>
+                    </file>
+                </directory>
+            </directory>
+
+            <directory name="lib" description="第三方库">
+                <file name="pdf.min.js" description="PDF.js 库"/>
+                <file name="pdf.worker.min.js" description="PDF.js 工作线程"/>
+            </directory>
+        </directory>
+    </directory_structure>
+
+    <features>
+        <feature name="智能助手">
+            <description>基于大语言模型的对话功能</description>
+            <components>
+                <component>文本摘要生成</component>
+                <component>文本翻译</component>
+                <component>智能问答</component>
+                <component>Agent 调用</component>
+            </components>
+        </feature>
+
+        <feature name="知识库管理">
+            <description>文档管理和知识库操作</description>
+            <components>
+                <component>知识库创建和删除</component>
+                <component>文档添加和删除</component>
+                <component>文档树形展示</component>
+                <component>实时刷新</component>
+            </components>
+        </feature>
+
+        <feature name="工具箱">
+            <description>实用工具集合</description>
+            <components>
+                <component>PDF 解析工具</component>
+                <component>智能搜索（待实现）</component>
+                <component>TDMS 助手（待实现）</component>
+                <component>LCM 助手（待实现）</component>
+                <component>数据分析（待实现）</component>
+                <component>格式转换（待实现）</component>
+            </components>
+        </feature>
+    </features>
+
+    <api_integrations>
+        <api name="RAGFlow">
+            <endpoint>http://172.19.12.146:8888/api/v1</endpoint>
+            <features>
+                <feature>知识库管理</feature>
+                <feature>Agent 调用</feature>
+            </features>
+        </api>
+        <api name="Ollama">
+            <endpoint>http://localhost:11434/api</endpoint>
+            <features>
+                <feature>文本处理</feature>
+                <feature>智能对话</feature>
+            </features>
+        </api>
+    </api_integrations>
+</project> 

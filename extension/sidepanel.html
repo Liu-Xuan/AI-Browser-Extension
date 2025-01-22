@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+            padding: 0;
+            margin: 0;
+        }
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 14px;
+            color: #666;
+            position: relative;
+        }
+        .tab.active {
+            color: #2196F3;
+            font-weight: bold;
+        }
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #2196F3;
+        }
+        .tab-content {
+            display: none;
+            height: calc(100vh - 45px);
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 智能助手页面样式 */
+        .text-tools {
+            flex: 0 0 auto;
+            margin-bottom: 20px;
+        }
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .qa-container {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        .qa-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .qa-input {
+            display: flex;
+            gap: 10px;
+        }
+        #qaInput {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        /* 知识库页面样式 */
+        .kb-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 10px;
+            padding: 20px;
+        }
+        .kb-tools {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .kb-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-height: 0;
+        }
+        .kb-tree-container {
+            flex: 1;
+            display: flex;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            min-height: 0;
+        }
+        .kb-tree {
+            width: 180px;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            background: #f5f5f5;
+        }
+        .kb-docs {
+            flex: 1;
+            overflow-y: auto;
+            background: #fff;
+        }
+        .refresh-button {
+            padding: 4px 8px;
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .refresh-button:hover {
+            background: #f5f5f5;
+        }
+        .refresh-button i {
+            font-size: 16px;
+        }
+        .tree-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tree-item:hover {
+            background: #e8f5e9;
+        }
+        .tree-item.selected {
+            background: #c8e6c9;
+        }
+        .tree-item .dataset-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .tree-item .dataset-name {
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .tree-item .dataset-meta {
+            font-size: 12px;
+            color: #666;
+        }
+        .doc-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        .doc-item:hover {
+            background: #f5f5f5;
+        }
+        .doc-item.selected {
+            background: #e3f2fd;
+        }
+        .doc-item .doc-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .doc-item .doc-name {
+            font-weight: bold;
+            flex: 1;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .doc-item .doc-meta {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+        .doc-item .doc-status {
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            white-space: nowrap;
+        }
+        .doc-item .doc-status.pending {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        .chat-container {
+            height: 300px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .chat-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* 工具页面样式 */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 20px;
+        }
+        .tool-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .tool-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-color: #2196F3;
+        }
+        .tool-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #2196F3;
+        }
+        .tool-description {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            margin-top: 5px;
+        }
+        
+        /* 通用按钮样式 */
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button.secondary {
+            background-color: #2196F3;
+        }
+        button.secondary:hover {
+            background-color: #1976D2;
+        }
+        button.danger {
+            background-color: #dc3545;
+        }
+        button.danger:hover {
+            background-color: #c82333;
+        }
+        
+        /* 输出区域样式 */
+        #output {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f9f9f9;
+            margin-bottom: 20px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .status {
+            color: #666;
+            font-style: italic;
+        }
+        .qa-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .qa-tools {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            background: #f5f5f5;
+        }
+        .agent-selector {
+            flex: 1;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .secondary-button {
+            padding: 8px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .secondary-button:hover {
+            background: #e3e3e3;
+        }
+        .secondary-button i {
+            font-size: 16px;
+        }
+        
+        /* PDF 工具样式 */
+        .pdf-tool {
+            padding: 20px;
+        }
+        .tool-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .tool-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .progress-bar {
+            height: 4px;
+            background: #f0f0f0;
+            border-radius: 2px;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-inner {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: #2196F3;
+            transition: width 0.3s ease;
+        }
+        .progress-text {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 6px;
+            font-size: 12px;
+            color: #666;
+        }
+        .result-area {
+            margin-top: 20px;
+        }
+        .metadata-section,
+        .outline-section,
+        .content-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .metadata-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .metadata-table td {
+            padding: 4px 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .metadata-table td:first-child {
+            font-weight: bold;
+            width: 100px;
+        }
+        .outline-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .outline-item {
+            padding: 4px 0;
+        }
+        .content-preview {
+            position: relative;
+            max-height: 300px;
+            overflow: hidden;
+        }
+        .fade-out {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: linear-gradient(transparent, #f9f9f9);
+        }
+        .error-message,
+        .success-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            animation: fadeIn 0.3s ease;
+        }
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .status-log-area {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+        }
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .log-time {
+            color: #666;
+            margin-right: 8px;
+        }
+        .log-message {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="tabs">
+        <button class="tab active" data-tab="assistant">智能助手</button>
+        <button class="tab" data-tab="knowledge">知识库</button>
+        <button class="tab" data-tab="tools">工具箱</button>
+    </div>
+
+    <!-- 智能助手页面 -->
+    <div id="assistant" class="tab-content active">
+        <div class="text-tools">
+            <div class="actions">
+                <button id="btnSummarize">生成摘要</button>
+                <button id="btnTranslate">翻译选中文本</button>
+            </div>
+            <div id="output" class="status">选中网页文本后点击按钮...</div>
+        </div>
+        <div class="qa-container">
+            <div class="qa-tools">
+                <select id="agentSelector" class="agent-selector">
+                    <option value="">直接对话（Qwen）</option>
+                    <!-- Agent 列表将通过 JavaScript 动态加载 -->
+                </select>
+                <button id="btnUseContext" class="secondary-button" title="使用当前页面作为背景">
+                    <i class="fas fa-file-import"></i>
+                </button>
+            </div>
+            <div class="qa-messages" id="qaMessages"></div>
+            <div class="qa-input-container">
+                <input type="text" id="qaInput" placeholder="输入问题...">
+                <button id="btnAsk">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 知识库页面 -->
+    <div id="knowledge" class="tab-content">
+        <div class="kb-container">
+            <div class="kb-tools">
+                <button id="btnCreateDataset" class="secondary">创建知识库</button>
+                <button id="btnDeleteDataset" class="danger">删除知识库</button>
+                <button id="btnAddToKB" class="secondary">添加当前页面</button>
+                <button id="btnDeleteFromKB" class="danger">删除选中文档</button>
+                <button id="btnRefresh" class="refresh-button" title="刷新">
+                    <i>🔄</i>
+                    刷新
+                </button>
+            </div>
+            <div class="kb-content">
+                <div class="kb-tree-container">
+                    <div class="kb-tree" id="kbTree">
+                        <!-- 知识库列表将通过JavaScript动态生成 -->
+                    </div>
+                    <div class="kb-docs" id="kbDocs">
+                        <!-- 文档列表将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+                <div class="chat-container">
+                    <iframe
+                        id="chatFrame"
+                        class="chat-frame"
+                        src="http://172.19.12.146:8888/chat/share?shared_id=8afacc70d3c811efa8bc0242ac120006&from=agent&auth=Y1ZDhlMGEwZDNiZDExZWY4MjEzMDI0Mm"
+                        frameborder="0"
+                    ></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 工具箱页面 -->
+    <div id="tools" class="tab-content">
+        <div class="tools-grid">
+            <div class="tool-item" data-tool="pdf">
+                <i class="fas fa-file-pdf"></i>
+                <span>PDF 解析</span>
+            </div>
+            <div class="tool-item">
+                <div class="tool-icon">🔍</div>
+                <span>智能搜索</span>
+                <div class="tool-description">快速搜索文档内容</div>
+            </div>
+            <div class="tool-item">
+                <div class="tool-icon">📝</div>
+                <span>TDMS 助手</span>
+                <div class="tool-description">TDMS 系统辅助工具</div>
+            </div>
+            <div class="tool-item">
+                <div class="tool-icon">🎯</div>
+                <span>LCM 助手</span>
+                <div class="tool-description">LCM 系统辅助工具</div>
+            </div>
+            <div class="tool-item">
+                <div class="tool-icon">📊</div>
+                <span>数据分析</span>
+                <div class="tool-description">数据分析和可视化</div>
+            </div>
+            <div class="tool-item">
+                <div class="tool-icon">🔄</div>
+                <span>格式转换</span>
+                <div class="tool-description">文件格式转换工具</div>
+            </div>
+        </div>
+        
+        <!-- 工具内容区域 -->
+        <div class="tool-content" id="toolContent">
+            <!-- 工具的具体内容将通过 JavaScript 动态加载 -->
+        </div>
+    </div>
+
+    <script src="sidepanel.js"></script>
+</body>
+</html> 

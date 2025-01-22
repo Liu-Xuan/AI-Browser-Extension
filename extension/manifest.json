@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "AI Browser Extension",
+  "version": "1.0",
+  "description": "An AI-powered browser extension for text processing and knowledge management",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "scripting",
+    "webRequest",
+    "downloads",
+    "sidePanel"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["content_script.js"]
+    },
+    {
+      "matches": ["*://*/*"],
+      "js": ["tools/pdf/content-script.js"],
+      "type": "module"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "host_permissions": [
+    "http://tdms.airchina.com/*",
+    "https://tdms.airchina.com/*",
+    "http://172.19.12.146:8888/*",
+    "https://*/*",
+    "http://*/*",
+    "*://*.airchina.com/*",
+    "*://*.tdms.airchina.com/*",
+    "*://*/*.pdf"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["tools/pdf/*", "lib/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+} 

@@ -1,0 +1,35 @@
+version: '3'
+services:
+  server:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./server:/app
+      - pip-cache:/home/appuser/.cache/pip
+      - python-packages:/home/appuser/.local/lib/python3.9/site-packages
+    environment:
+      - PYTHONPATH=/app:/home/appuser/.local/lib/python3.9/site-packages
+      - PIP_CACHE_DIR=/home/appuser/.cache/pip
+      - PIP_DEFAULT_TIMEOUT=100
+      - PIP_DISABLE_PIP_VERSION_CHECK=1
+      - PATH=/home/appuser/.local/bin:${PATH}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    entrypoint: >
+      /bin/bash -c "
+      pip install --user --no-cache-dir -r requirements.txt;
+      python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+
+volumes:
+  python-packages:
+    name: python-packages
+  pip-cache:
+    name: pip-cache 
