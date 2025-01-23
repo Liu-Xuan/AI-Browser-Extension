@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 *.so
 .Python
+env/
 build/
 develop-eggs/
 dist/
@@ -20,6 +21,10 @@ wheels/
 .installed.cfg
 *.egg
 
+# Virtual Environment
+venv/
+ENV/
+
 # Environment variables
 .env
 .env.local
@@ -31,6 +36,7 @@ wheels/
 *.swp
 *.swo
 .DS_Store
+Thumbs.db
 
 # Node
 node_modules/
@@ -56,4 +62,8 @@ build/
 *.zip
 
 # Docker
-.docker/ 
+.docker/
+
+# Project specific
+extension/core/api.js  # 包含 API keys
+config.local.js 
