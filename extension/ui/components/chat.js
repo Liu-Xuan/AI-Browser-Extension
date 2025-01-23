@@ -370,13 +370,21 @@ export class Chat {
      */
     async loadAgents() {
         try {
+            logger.debug('开始加载模型列表...');
+            
             // 获取LLM模型列表
             const llmModels = await apiClient.getLLMModels();
-            logger.debug('Loaded LLM models:', llmModels);
+            logger.debug('获取到的LLM模型:', {
+                count: llmModels.length,
+                models: llmModels.map(m => m.id)
+            });
             
             // 获取Agent列表
             const agents = await apiClient.getAgents();
-            logger.debug('Loaded agents:', agents);
+            logger.debug('获取到的Agent:', {
+                count: agents?.length || 0,
+                agents: agents?.map(a => a.id)
+            });
             
             // 合并两个列表
             const allModels = [
@@ -389,14 +397,23 @@ export class Chat {
                 }))
             ];
 
+            logger.debug('合并后的模型列表:', {
+                total: allModels.length,
+                models: allModels.map(m => ({
+                    id: m.id,
+                    type: m.type
+                }))
+            });
+
             if (allModels.length === 0) {
-                logger.warn('No models available');
+                logger.warn('没有可用的模型');
                 this.showError('暂无可用的模型');
                 return;
             }
 
             // 清空现有选项
             this.elements.agentSelect.innerHTML = '';
+            logger.debug('已清空现有选项');
             
             // 添加LLM模型组
             if (llmModels.length > 0) {
@@ -420,8 +437,9 @@ export class Chat {
                 });
                 
                 this.elements.agentSelect.appendChild(llmGroup);
+                logger.debug('已添加LLM模型组');
             }
-            
+
             // 添加Agent组
             const validAgents = agents?.filter(a => a && a.id);
             if (validAgents && validAgents.length > 0) {
@@ -437,6 +455,7 @@ export class Chat {
                 });
                 
                 this.elements.agentSelect.appendChild(agentGroup);
+                logger.debug('已添加Agent组');
             }
 
             // 设置默认模型（优先使用DeepSeek）
@@ -447,13 +466,13 @@ export class Chat {
             this.currentAgent = defaultModelId;
             this.elements.agentSelect.value = defaultModelId;
             
-            logger.debug('Models loaded successfully', { 
+            logger.debug('模型加载完成', { 
                 count: allModels.length,
                 defaultModel: this.currentAgent,
-                models: allModels
+                models: allModels.map(m => m.id)
             });
         } catch (error) {
-            logger.error('Failed to load models:', error);
+            logger.error('加载模型列表失败:', error);
             this.showError('加载模型列表失败');
             throw error;
         }
