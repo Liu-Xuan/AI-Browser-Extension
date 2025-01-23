@@ -9,7 +9,7 @@ FastAPI 应用主入口
 - 健康检查
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
@@ -37,12 +37,12 @@ app.add_middleware(
 )
 
 # 服务实例
-translator = TranslatorService()
-summarizer = SummarizerService()
-qa_service = QAService()
-chat_service = ChatService()
+translator = TranslatorService(model_type="deepseek-r1")
+summarizer = SummarizerService(model_type="deepseek-r1")
+qa_service = QAService(model_type="deepseek-r1")
+chat_service = ChatService(default_model="deepseek-r1")
 knowledge_service = KnowledgeService()
-llm = LLMWrapper()
+llm = LLMWrapper(model_type="deepseek-r1")
 
 # 数据模型
 class TranslateRequest(BaseModel):
@@ -161,16 +161,16 @@ async def chat(request: ChatRequest):
             error=str(e)
         )
 
-@app.get("/api/v1/datasets", response_model=DatasetResponse)
+@app.get("/api/v1/datasets")
 async def get_datasets():
     """获取知识库列表"""
     try:
         datasets = await knowledge_service.get_datasets()
-        return DatasetResponse(data=datasets)
+        return {"code": 0, "data": datasets}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/v1/datasets", response_model=Dict[str, Any])
+@app.post("/api/v1/datasets")
 async def create_dataset(request: DatasetRequest):
     """创建知识库"""
     try:
@@ -178,48 +178,112 @@ async def create_dataset(request: DatasetRequest):
             name=request.name,
             description=request.description
         )
-        return dataset
+        return {"code": 0, "data": dataset}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.delete("/api/v1/datasets/{dataset_id}")
-async def delete_dataset(dataset_id: str):
+@app.delete("/api/v1/datasets")
+async def delete_dataset(ids: List[str]):
     """删除知识库"""
     try:
-        await knowledge_service.delete_dataset(dataset_id)
-        return {"success": True}
+        await knowledge_service.delete_dataset(ids[0])  # 目前只处理单个删除
+        return {"code": 0}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/v1/datasets/{dataset_id}/documents", response_model=DatasetResponse)
+@app.put("/api/v1/datasets/{dataset_id}")
+async def update_dataset(dataset_id: str, request: DatasetRequest):
+    """更新知识库"""
+    try:
+        await knowledge_service.update_dataset(
+            dataset_id=dataset_id,
+            name=request.name,
+            description=request.description
+        )
+        return {"code": 0}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/v1/datasets/{dataset_id}/documents")
 async def get_documents(dataset_id: str):
     """获取文档列表"""
     try:
         documents = await knowledge_service.get_documents(dataset_id)
-        return DatasetResponse(data=documents)
+        return {"code": 0, "data": {"docs": documents}}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/v1/datasets/{dataset_id}/documents")
-async def add_document(dataset_id: str, request: DocumentRequest):
-    """添加文档"""
+async def upload_document(dataset_id: str, file: UploadFile = File(...)):
+    """上传文档"""
     try:
-        document = await knowledge_service.add_document(
-            dataset_id=dataset_id,
-            title=request.title,
-            content=request.content,
-            url=request.url
-        )
-        return document
+        result = await knowledge_service.add_document(dataset_id, file)
+        return {"code": 0, "data": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/api/v1/datasets/{dataset_id}/documents")
-async def delete_documents(dataset_id: str, document_ids: List[str]):
+async def delete_documents(dataset_id: str, ids: List[str]):
     """删除文档"""
     try:
-        await knowledge_service.delete_documents(dataset_id, document_ids)
-        return {"success": True}
+        await knowledge_service.delete_documents(dataset_id, ids)
+        return {"code": 0}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/api/v1/datasets/{dataset_id}/documents/{document_id}")
+async def update_document(
+    dataset_id: str,
+    document_id: str,
+    chunk_method: str,
+    parser_config: Dict[str, Any]
+):
+    """更新文档配置"""
+    try:
+        await knowledge_service.update_document(
+            dataset_id=dataset_id,
+            document_id=document_id,
+            chunk_method=chunk_method,
+            parser_config=parser_config
+        )
+        return {"code": 0}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/v1/datasets/{dataset_id}/chunks")
+async def parse_documents(dataset_id: str, document_ids: List[str]):
+    """解析文档"""
+    try:
+        await knowledge_service.parse_documents(dataset_id, document_ids)
+        return {"code": 0}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/v1/datasets/{dataset_id}/chunks")
+async def stop_parsing(dataset_id: str, document_ids: List[str]):
+    """停止解析"""
+    try:
+        await knowledge_service.stop_parsing(dataset_id, document_ids)
+        return {"code": 0}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/v1/retrieval")
+async def retrieve(
+    question: str,
+    dataset_ids: List[str],
+    similarity_threshold: float = 0.2,
+    top_k: int = 5
+):
+    """检索知识库内容"""
+    try:
+        result = await knowledge_service.retrieve(
+            question=question,
+            dataset_ids=dataset_ids,
+            similarity_threshold=similarity_threshold,
+            top_k=top_k
+        )
+        return {"code": 0, "data": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

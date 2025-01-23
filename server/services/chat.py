@@ -17,50 +17,89 @@ settings = Settings()
 logger = logging.getLogger(__name__)
 
 class ChatService:
-    def __init__(self):
+    def __init__(self, default_model: str = "deepseek-r1"):
+        """初始化聊天服务
+        
+        Args:
+            default_model: 默认使用的模型类型
+        """
+        self.default_model = default_model
         self.system_prompts = {
-            "ollama": "你是一个由 Ollama 部署的本地 LLM 助手，基于 Qwen2.5 32B 模型。请理解用户的需求，提供专业、友好的回答。",
-            "gpt4": "你是 OpenAI 的 GPT-4 助手。请理解用户的需求，提供专业、友好的回答。",
-            "deepseek-v3": "你是 DeepSeek V3 助手。请理解用户的需求，提供专业、友好的回答。",
-            "deepseek-r1": "你是 DeepSeek R1 推理助手。请理解用户的需求，提供专业、友好的回答。",
-            "macstudio-qwen": "你是运行在 MacStudio 上的 Qwen2.5 32B 助手。请理解用户的需求，提供专业、友好的回答。"
+            "ollama": """你是一个由 Ollama 部署的本地 LLM 助手，基于 Qwen2.5 32B 模型。
+在对话中，请遵循以下原则：
+1. 理解用户的需求，提供专业、友好的回答
+2. 保持对话的连贯性和上下文理解
+3. 如果涉及代码，提供详细的解释和示例
+4. 如果不确定，诚实地表达不确定性""",
+
+            "gpt4": """你是 OpenAI 的 GPT-4 助手。
+在对话中，请遵循以下原则：
+1. 理解用户的需求，提供专业、友好的回答
+2. 保持对话的连贯性和上下文理解
+3. 如果涉及代码，提供详细的解释和示例
+4. 如果不确定，诚实地表达不确定性""",
+
+            "deepseek-v3": """你是 DeepSeek V3 助手。
+在对话中，请遵循以下原则：
+1. 理解用户的需求，提供专业、友好的回答
+2. 保持对话的连贯性和上下文理解
+3. 如果涉及代码，提供详细的解释和示例
+4. 如果不确定，诚实地表达不确定性""",
+
+            "deepseek-r1": """你是 DeepSeek R1 推理助手。
+在对话中，请遵循以下原则：
+1. 理解用户的需求，提供专业、友好的回答
+2. 保持对话的连贯性和上下文理解
+3. 如果涉及代码，提供详细的解释和示例
+4. 如果不确定，诚实地表达不确定性""",
+
+            "macstudio-qwen": """你是运行在 MacStudio 上的 Qwen2.5 32B 助手。
+在对话中，请遵循以下原则：
+1. 理解用户的需求，提供专业、友好的回答
+2. 保持对话的连贯性和上下文理解
+3. 如果涉及代码，提供详细的解释和示例
+4. 如果不确定，诚实地表达不确定性"""
         }
 
     async def chat(
         self,
         messages: List[Dict[str, str]],
-        model_type: str = "ollama",
+        model_type: Optional[str] = None,
         context: Optional[Dict[str, str]] = None
     ) -> Dict[str, str]:
-        """
-        处理聊天请求
+        """处理聊天请求
         
         Args:
             messages: 对话历史
-            model_type: 模型类型
+            model_type: 模型类型，如果未指定则使用默认模型
             context: 上下文信息
             
         Returns:
             Dict[str, str]: 助手的回复
+            
+        Raises:
+            Exception: 当生成回复失败时抛出异常
         """
         try:
-            logger.info(f"开始处理聊天请求，model_type={model_type}")
+            # 使用指定的模型类型或默认模型
+            model = model_type or self.default_model
+            logger.info(f"开始处理聊天请求，model_type={model}")
             
-            # 根据 model_type 创建 LLM 实例
-            llm = LLMWrapper(model_type)
-            logger.info(f"成功创建 LLM 实例，model_type={model_type}")
+            # 创建 LLM 实例
+            llm = LLMWrapper(model)
+            logger.info(f"成功创建 LLM 实例，model_type={model}")
             
-            # 获取用户最新的消息
-            user_message = messages[-1]["content"]
-            logger.info(f"用户消息：{user_message}")
+            # 构建完整的提示词
+            prompt = self._build_prompt(messages, context)
+            logger.info(f"构建的提示词：{prompt}")
             
             # 获取对应模型的系统提示词
-            system_prompt = self.system_prompts.get(model_type, self.system_prompts["ollama"])
+            system_prompt = self.system_prompts.get(model, self.system_prompts[self.default_model])
             logger.info(f"系统提示词：{system_prompt}")
             
             # 调用 LLM 生成回复
             response = await llm.generate(
-                prompt=user_message,
+                prompt=prompt,
                 system_prompt=system_prompt,
                 temperature=0.7,
                 stream=False
@@ -73,15 +112,20 @@ class ChatService:
             }
             
         except Exception as e:
-            logger.error(f"生成回复时出错: {str(e)}", exc_info=True)
+            error_msg = f"生成回复时出错: {str(e)}"
+            logger.error(error_msg, exc_info=True)
+            print(f"\n[DEBUG] 聊天错误:")
+            print(f"Model: {model_type or self.default_model}")
+            print(f"Messages: {messages}")
+            print(f"Context: {context}")
+            print(f"Error: {str(e)}\n")
             return {
                 "role": "assistant",
-                "content": f"抱歉，生成回复时出错: {str(e)}"
+                "content": error_msg
             }
 
     def _build_prompt(self, messages: List[Dict[str, str]], context: Optional[Dict[str, str]] = None) -> str:
-        """
-        构建完整的提示词
+        """构建完整的提示词
         
         将上下文信息和对话历史组织成结构化的提示词。
         

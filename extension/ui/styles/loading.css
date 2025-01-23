@@ -1,0 +1,21 @@
+/* 加载指示器容器 */
+.loading-indicator {
+    display: inline-block;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+/* 加载动画 */
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e0e0e0;
+    border-top: 2px solid #2196f3;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+} 

@@ -17,9 +17,14 @@ from config import Settings
 settings = Settings()
 
 class QAService:
-    def __init__(self):
+    def __init__(self, model_type: str = "deepseek-r1"):
+        """初始化问答服务
+        
+        Args:
+            model_type: 使用的 LLM 类型，默认使用 DeepSeek Reasoner
+        """
         # 初始化 LLM 封装实例
-        self.llm = LLMWrapper()
+        self.llm = LLMWrapper(model_type=model_type)
 
     async def get_answer(
         self,
@@ -28,8 +33,7 @@ class QAService:
         history: Optional[List[Dict[str, str]]] = None,
         stream: bool = False
     ) -> str:
-        """
-        基于上下文回答问题
+        """基于上下文回答问题
         
         此方法专注于从给定的上下文中提取信息来回答问题。
         通过较低的温度值确保回答的确定性和准确性。
@@ -52,7 +56,11 @@ class QAService:
             prompt = self._build_prompt(context, question, history)
             
             # 获取问答助手的系统提示词
-            system_prompt = settings.SYSTEM_PROMPTS.get("qa")
+            system_prompt = settings.SYSTEM_PROMPTS.get("qa", """你是一个专业的问答助手。在回答问题时，请遵循以下原则：
+1. 仅基于给定的上下文回答问题
+2. 如果上下文中没有相关信息，请明确说明
+3. 保持答案的准确性和客观性
+4. 如果涉及数字或关键数据，请准确引用""")
             
             # 调用 LLM 生成答案
             response = await self.llm.generate(
@@ -64,6 +72,11 @@ class QAService:
             
             return response.strip()
         except Exception as e:
+            print(f"\n[DEBUG] 生成答案失败:")
+            print(f"Context Length: {len(context)}")
+            print(f"Question: {question}")
+            print(f"History: {history}")
+            print(f"Error: {str(e)}\n")
             raise Exception(f"生成答案失败: {str(e)}")
 
     def _build_prompt(
@@ -72,8 +85,7 @@ class QAService:
         question: str,
         history: Optional[List[Dict[str, str]]] = None
     ) -> str:
-        """
-        构建完整的提示词
+        """构建完整的提示词
         
         将上下文、历史对话和当前问题组织成结构化的提示词。
         

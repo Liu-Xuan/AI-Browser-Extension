@@ -1,6 +1,18 @@
-FROM python:3.11-slim
+FROM python:3.9-slim
 
 WORKDIR /app
+
+# 安装系统工具和编译依赖
+RUN apt-get update && apt-get install -y \
+    iputils-ping \
+    curl \
+    net-tools \
+    gcc \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 升级 pip
+RUN pip install --no-cache-dir --upgrade pip
 
 # 安装依赖
 COPY requirements.txt .

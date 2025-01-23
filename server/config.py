@@ -5,6 +5,7 @@
 - LLM（大语言模型）的连接配置
 - API 接口配置
 - 系统提示词配置
+- RAGFlow 知识库配置
 
 配置项可以通过环境变量或 .env 文件进行覆盖。
 使用 pydantic_settings 确保配置的类型安全。
@@ -25,54 +26,65 @@ class LLMConfig:
         self.model = model
 
 class Settings(BaseSettings):
-    # LLM 配置
+    """应用配置"""
+    
+    # LLM API Keys
+    OPENAI_API_KEY: str
+    DEEPSEEK_API_KEY: str
+    MACSTUDIO_API_KEY: str
+
+    # LLM API URLs
     OLLAMA_API_URL: str = "http://host.docker.internal:11434/api/generate"
-    OLLAMA_MODEL: str = "qwen2.5:32b"
-    
-    OPENAI_API_KEY: str = ""  # 从环境变量获取
-    OPENAI_MODEL: str = "chatgpt-4o-latest"
-    
-    DEEPSEEK_API_KEY: str = ""  # 从环境变量获取
+    OPENAI_API_URL: str = "https://api.openai.com/v1"
     DEEPSEEK_API_URL: str = "https://api.deepseek.com/v1"
+    MACSTUDIO_API_URL: str = "http://172.19.9.158:9997"
+
+    # LLM Models
+    OLLAMA_MODEL: str = "qwen2.5:32b"
+    OPENAI_MODEL: str = "chatgpt-4o-latest"
     DEEPSEEK_CHAT_MODEL: str = "deepseek-chat"
     DEEPSEEK_REASONER_MODEL: str = "deepseek-reasoner"
-    
-    MACSTUDIO_API_KEY: str = ""  # 从环境变量获取
-    MACSTUDIO_API_URL: str = "http://172.19.9.158:9997"
     MACSTUDIO_MODEL: str = "qwen2.5-32B-MLX"
-    
-    LLM_TIMEOUT: int = 30  # API 请求超时时间（秒）
-    
-    # LLM 模型配置映射
-    LLM_CONFIGS: Dict[str, LLMConfig] = {
-        "ollama": LLMConfig(
-            api_url=OLLAMA_API_URL,
-            model=OLLAMA_MODEL
-        ),
-        "gpt4": LLMConfig(
-            api_url="https://api.openai.com/v1",
-            api_key=OPENAI_API_KEY,
-            model=OPENAI_MODEL
-        ),
-        "deepseek-v3": LLMConfig(
-            api_url=DEEPSEEK_API_URL,
-            api_key=DEEPSEEK_API_KEY,
-            model=DEEPSEEK_CHAT_MODEL
-        ),
-        "deepseek-r1": LLMConfig(
-            api_url=DEEPSEEK_API_URL,
-            api_key=DEEPSEEK_API_KEY,
-            model=DEEPSEEK_REASONER_MODEL
-        ),
-        "macstudio-qwen": LLMConfig(
-            api_url=MACSTUDIO_API_URL,
-            api_key=MACSTUDIO_API_KEY,
-            model=MACSTUDIO_MODEL
-        )
-    }
-    
-    # API 配置
-    API_PREFIX: str = "/api/v1"  # API 路由前缀
+
+    # API Settings
+    LLM_TIMEOUT: int = 30
+    API_PREFIX: str = "/api/v1"
+
+    # RAGFlow Settings
+    RAGFLOW_API_URL: str = "http://172.19.12.146:8888"
+    RAGFLOW_API_KEY: str = "ragflow-RkOWJjM2ZhZDFhZTExZWZhYmRmMDI0Mm"
+
+    # LLM 配置映射
+    @property
+    def LLM_CONFIGS(self) -> Dict[str, LLMConfig]:
+        """获取 LLM 配置映射"""
+        return {
+            "ollama": LLMConfig(
+                api_url=self.OLLAMA_API_URL,
+                api_key=None,
+                model=self.OLLAMA_MODEL
+            ),
+            "gpt4o": LLMConfig(
+                api_url=f"{self.OPENAI_API_URL}/chat/completions",
+                api_key=self.OPENAI_API_KEY,
+                model=self.OPENAI_MODEL
+            ),
+            "deepseek-v3": LLMConfig(
+                api_url=f"{self.DEEPSEEK_API_URL}/chat/completions",
+                api_key=self.DEEPSEEK_API_KEY,
+                model=self.DEEPSEEK_CHAT_MODEL
+            ),
+            "deepseek-r1": LLMConfig(
+                api_url=f"{self.DEEPSEEK_API_URL}/chat/completions",
+                api_key=self.DEEPSEEK_API_KEY,
+                model=self.DEEPSEEK_REASONER_MODEL
+            ),
+            "macstudio-qwen": LLMConfig(
+                api_url=f"{self.MACSTUDIO_API_URL}/chat/completions",
+                api_key=self.MACSTUDIO_API_KEY,
+                model=self.MACSTUDIO_MODEL
+            )
+        }
     
     # 系统提示词配置
     # 为不同功能模块定义专门的系统提示词，指导模型的行为
@@ -89,4 +101,6 @@ class Settings(BaseSettings):
     
     class Config:
         # 指定配置文件路径，支持从 .env 文件加载配置
-        env_file = ".env" 
+        env_file = ".env"
+
+settings = Settings() 

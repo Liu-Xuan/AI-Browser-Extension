@@ -1,11 +1,11 @@
-version: '3'
+version: '3.8'
 services:
   server:
     build: 
       context: ./server
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
+    env_file:
+      - ./server/.env
     volumes:
       - ./server:/app
       - pip-cache:/home/appuser/.cache/pip
@@ -16,26 +16,29 @@ services:
       - PIP_DEFAULT_TIMEOUT=100
       - PIP_DISABLE_PIP_VERSION_CHECK=1
       - PATH=/home/appuser/.local/bin:${PATH}
-    networks:
-      - app-network
+    network_mode: "bridge"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      - "macstudio:172.19.9.158"
+    ports:
+      - "8000:8000"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
-    entrypoint: >
-      /bin/bash -c "
-      pip install --user --no-cache-dir -r requirements.txt;
-      python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
-
-networks:
-  app-network:
-    driver: bridge
+    command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 volumes:
   python-packages:
     name: python-packages
   pip-cache:
-    name: pip-cache 
+    name: pip-cache
+
+networks:
+  app_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16 
