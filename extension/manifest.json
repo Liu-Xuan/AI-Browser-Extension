@@ -1,55 +1,41 @@
 {
   "manifest_version": 3,
-  "name": "AI Assistant",
-  "version": "1.0",
-  "description": "智能文本处理助手 - 提供翻译、摘要、问答功能",
-  "icons": {
-    "16": "assets/icons/icon16.png",
-    "48": "assets/icons/icon48.png",
-    "128": "assets/icons/icon128.png"
-  },
+  "name": "AI Browser Extension",
+  "version": "1.0.0",
+  "description": "A browser extension for managing temporary knowledge base and RAGflow chat integration",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "tabs",
+    "scripting",
+    "sidePanel"
+  ],
+  "host_permissions": [
+    "http://172.19.12.146:8888/*"
+  ],
   "action": {
-    "default_popup": "ui/popup.html",
     "default_icon": {
       "16": "assets/icons/icon16.png",
       "48": "assets/icons/icon48.png",
       "128": "assets/icons/icon128.png"
     }
   },
-  "permissions": [
-    "activeTab",
-    "storage",
-    "contextMenus",
-    "sidePanel",
-    "scripting"
-  ],
-  "host_permissions": [
-    "http://localhost:8000/*",
-    "https://*/*",
-    "http://*/*"
-  ],
   "background": {
-    "service_worker": "core/background.js",
-    "type": "module"
+    "service_worker": "background/background.js"
+  },
+  "side_panel": {
+    "default_path": "popup/index.html"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["core/content-script.js"],
-      "css": ["ui/styles.css"]
+      "js": ["content/content.js"],
+      "run_at": "document_end"
     }
   ],
-  "side_panel": {
-    "default_path": "ui/sidepanel.html"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "core/*",
-        "ui/*",
-        "assets/*"
-      ],
-      "matches": ["<all_urls>"]
-    }
-  ]
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  }
 } 
