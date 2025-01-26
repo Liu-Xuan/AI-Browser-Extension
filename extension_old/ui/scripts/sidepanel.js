@@ -435,12 +435,196 @@ function showToast(message, type = 'success') {
     setTimeout(() => toast.remove(), 2000);
 }
 
-// 启动初始化
-document.addEventListener('DOMContentLoaded', () => {
-    if (!state.isInitialized) {
-        initialize().catch(error => {
-            logger.error('初始化失败:', error);
-            showToast('初始化失败，请刷新页面重试', 'error');
+// 初始化文件列表管理器
+const fileListManager = new FileListManager('tempKbFiles', {
+    onDelete: async (fileId) => {
+        try {
+            await chrome.runtime.sendMessage({
+                type: 'deleteFile',
+                fileId: fileId
+            });
+        } catch (error) {
+            console.error('删除文件失败:', error);
+            // 可以添加错误提示UI
+        }
+    },
+    onLock: (fileId, locked) => {
+        // 发送消息到background更新文件锁定状态
+        chrome.runtime.sendMessage({
+            type: 'updateFileLock',
+            fileId: fileId,
+            locked: locked
         });
     }
+});
+
+// 初始化本地文件列表管理器
+const localFileListManager = new FileListManager('localTempKbFiles', {
+    onDelete: async (fileId) => {
+        try {
+            await chrome.runtime.sendMessage({
+                type: 'deleteLocalFile',
+                fileId: fileId
+            });
+        } catch (error) {
+            console.error('删除本地文件失败:', error);
+        }
+    },
+    onLock: (fileId, locked) => {
+        chrome.runtime.sendMessage({
+            type: 'updateLocalFileLock',
+            fileId: fileId,
+            locked: locked
+        });
+    }
+});
+
+// 监听文件列表更新事件
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'filesUpdated') {
+        fileListManager.updateFiles(message.files);
+    } else if (message.type === 'localFilesUpdated') {
+        localFileListManager.updateFiles(message.files);
+    }
+});
+
+// 初始化时获取文件列表
+async function initializeFileLists() {
+    try {
+        // 获取RAG文件列表
+        const response = await chrome.runtime.sendMessage({
+            type: 'getFiles'
+        });
+        if (response.files) {
+            fileListManager.updateFiles(response.files);
+        }
+
+        // 获取本地文件列表
+        const localResponse = await chrome.runtime.sendMessage({
+            type: 'getLocalFiles'
+        });
+        if (localResponse.files) {
+            localFileListManager.updateFiles(localResponse.files);
+        }
+    } catch (error) {
+        console.error('初始化文件列表失败:', error);
+    }
+}
+
+// 处理文件上传
+document.getElementById('uploadFileBtn').addEventListener('click', async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    input.accept = '.pdf,.txt,.docx';
+    
+    input.onchange = async (event) => {
+        const files = event.target.files;
+        if (files.length === 0) return;
+
+        for (const file of files) {
+            try {
+                await chrome.runtime.sendMessage({
+                    type: 'uploadFile',
+                    file: file
+                });
+            } catch (error) {
+                console.error('上传文件失败:', error);
+            }
+        }
+    };
+
+    input.click();
+});
+
+// 处理本地文件上传
+document.getElementById('localUploadFileBtn').addEventListener('click', async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    input.accept = '.pdf,.txt,.docx';
+    
+    input.onchange = async (event) => {
+        const files = event.target.files;
+        if (files.length === 0) return;
+
+        for (const file of files) {
+            try {
+                await chrome.runtime.sendMessage({
+                    type: 'uploadLocalFile',
+                    file: file
+                });
+            } catch (error) {
+                console.error('上传本地文件失败:', error);
+            }
+        }
+    };
+
+    input.click();
+});
+
+// 处理添加当前页面内容
+document.getElementById('addPageBtn').addEventListener('click', async () => {
+    try {
+        await chrome.runtime.sendMessage({
+            type: 'addCurrentPage'
+        });
+    } catch (error) {
+        console.error('添加页面内容失败:', error);
+    }
+});
+
+// 处理添加当前页面到本地
+document.getElementById('localAddPageBtn').addEventListener('click', async () => {
+    try {
+        await chrome.runtime.sendMessage({
+            type: 'addCurrentPageLocal'
+        });
+    } catch (error) {
+        console.error('添加页面内容到本地失败:', error);
+    }
+});
+
+// 处理开启新对话
+document.getElementById('newChatBtn').addEventListener('click', async () => {
+    try {
+        await chrome.runtime.sendMessage({
+            type: 'startNewChat'
+        });
+    } catch (error) {
+        console.error('开启新对话失败:', error);
+    }
+});
+
+// 处理开启新本地对话
+document.getElementById('localNewChatBtn').addEventListener('click', async () => {
+    try {
+        await chrome.runtime.sendMessage({
+            type: 'startNewLocalChat'
+        });
+    } catch (error) {
+        console.error('开启新本地对话失败:', error);
+    }
+});
+
+// 初始化选项卡切换
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabPanes = document.querySelectorAll('.tab-pane');
+
+tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        // 移除所有活动状态
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        tabPanes.forEach(pane => pane.classList.remove('active'));
+        
+        // 添加当前选中项的活动状态
+        button.classList.add('active');
+        const tabId = button.dataset.tab;
+        document.getElementById(tabId).classList.add('active');
+    });
+});
+
+// 初始化
+document.addEventListener('DOMContentLoaded', () => {
+    initializeFileLists();
 }); 

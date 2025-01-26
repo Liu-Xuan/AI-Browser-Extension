@@ -73,20 +73,27 @@ async function handlePopupWindow() {
     }
 }
 
-// 如果支持sidePanel，添加事件监听
-if (supportsSidePanel) {
+// 检查API可用性并注册事件监听
+async function initializeSidePanel() {
     try {
-        chrome.sidePanel.onOpened.addListener(() => {
-            sidePanelOpen = true;
-        });
-
-        chrome.sidePanel.onClosed.addListener(() => {
-            sidePanelOpen = false;
-        });
+        // 检查sidePanel API是否可用
+        if (chrome.sidePanel) {
+            console.log('注册sidePanel事件监听...');
+            // 使用可选链操作符
+            chrome.sidePanel?.setOptions?.({
+                enabled: true,
+                path: 'popup/index.html'
+            });
+        } else {
+            console.log('sidePanel API 不可用，使用弹出窗口模式');
+        }
     } catch (error) {
-        console.error('注册sidePanel事件监听失败:', error);
+        console.error('初始化sidePanel失败:', error);
     }
 }
+
+// 初始化
+initializeSidePanel();
 
 // 监听来自popup的消息
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {

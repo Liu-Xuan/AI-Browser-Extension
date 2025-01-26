@@ -1,38 +1,80 @@
 // 存储文件列表的数据结构
 let fileList = [];
 
-// 显示提示消息
-function showMessage(message, isError = false) {
+// 与background script和React组件的通信
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'updateDocumentList') {
+        // 通知React组件更新文档列表
+        window.dispatchEvent(new CustomEvent('updateDocuments', {
+            detail: message.documents
+        }));
+    } else if (message.type === 'connectionStatus') {
+        // 通知React组件更新连接状态
+        window.dispatchEvent(new CustomEvent('connectionStatusChange', {
+            detail: message.status
+        }));
+    } else if (message.type === 'showMessage') {
+        // 显示消息提示
+        showMessage(message.text, message.messageType);
+    }
+});
+
+// 消息提示函数
+function showMessage(text, type = 'success') {
     const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${isError ? 'error' : 'success'}`;
-    messageDiv.textContent = message;
+    messageDiv.className = `message ${type}`;
+    messageDiv.textContent = text;
     document.body.appendChild(messageDiv);
-    
-    // 3秒后自动消失
+
+    // 3秒后自动移除消息
     setTimeout(() => {
         messageDiv.remove();
     }, 3000);
 }
 
-// DOM 加载完成后初始化
-document.addEventListener('DOMContentLoaded', async () => {
-    // 初始化按钮事件监听
-    document.getElementById('uploadFile').addEventListener('click', handleFileUpload);
-    document.getElementById('addCurrentPage').addEventListener('click', handleAddCurrentPage);
-    document.getElementById('newChat').addEventListener('click', handleNewChat);
-
-    // 从storage加载文件列表
-    loadFileList();
-
-    try {
-        // 获取并设置正确的对话URL
-        const response = await chrome.runtime.sendMessage({ type: 'getChatUrl' });
+// 初始化RAGflow Chat iframe
+function initializeChatIframe() {
+    const chatContainer = document.getElementById('chat-container');
+    const iframe = document.createElement('iframe');
+    iframe.id = 'ragflowChat';
+    
+    // 从background获取chat URL
+    chrome.runtime.sendMessage({ type: 'getChatUrl' }, (response) => {
         if (response && response.url) {
-            document.getElementById('ragflowChat').src = response.url;
+            iframe.src = response.url;
+            chatContainer.appendChild(iframe);
+        } else {
+            showMessage('加载对话界面失败，请检查连接状态', 'error');
         }
-    } catch (error) {
-        showMessage('加载对话界面失败，请刷新重试', true);
-    }
+    });
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', () => {
+    initializeChatIframe();
+    
+    // 通知background script popup已打开
+    chrome.runtime.sendMessage({ 
+        type: 'popupOpened' 
+    }, (response) => {
+        if (response && response.connectionStatus) {
+            // 触发连接状态更新事件
+            window.dispatchEvent(new CustomEvent('connectionStatusChange', {
+                detail: response.connectionStatus
+            }));
+        }
+    });
+
+    // 请求初始文档列表
+    chrome.runtime.sendMessage({ 
+        type: 'getDocuments' 
+    }, (response) => {
+        if (response && response.documents) {
+            window.dispatchEvent(new CustomEvent('updateDocuments', {
+                detail: response.documents
+            }));
+        }
+    });
 });
 
 // 处理文件上传

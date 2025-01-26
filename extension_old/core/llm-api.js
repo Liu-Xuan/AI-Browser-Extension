@@ -37,6 +37,7 @@ export class ApiClient {
      * 发送请求
      * @param {string} endpoint - API端点
      * @param {Object} options - 请求选项
+     * @param {string} [options.agentId] - 可选的Agent ID，用于错误处理
      * @returns {Promise<any>} 响应数据
      */
     async request(endpoint, options = {}) {
@@ -95,7 +96,8 @@ export class ApiClient {
                     error: errorText
                 });
                 
-                if (agentId === 'qwen') {
+                // 使用传入的agentId进行错误处理
+                if (options.agentId === 'qwen') {
                     if (response.status === 502) {
                         throw new Error('Qwen服务未启动，请确保已启动Ollama服务');
                     } else if (response.status === 404 && errorData.error?.includes('not found, try pulling')) {
@@ -357,9 +359,11 @@ export class ApiClient {
                 logger.error('API request failed:', {
                     status: response.status,
                     statusText: response.statusText,
-                    error: errorText
+                    error: errorText,
+                    agentId // 确保在错误日志中包含agentId
                 });
                 
+                // 在这里可以安全地使用agentId，因为它在函数作用域内
                 if (agentId === 'qwen') {
                     if (response.status === 502) {
                         throw new Error('Qwen服务未启动，请确保已启动Ollama服务');
@@ -399,7 +403,10 @@ export class ApiClient {
                 model: agentId
             };
         } catch (error) {
-            logger.error('LLM request failed:', error);
+            logger.error('LLM request failed:', {
+                agentId, // 在错误日志中包含agentId
+                error: error.message
+            });
             throw error;
         }
     }

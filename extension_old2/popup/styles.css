@@ -1,19 +1,150 @@
 /* 基础样式 */
 body {
+    width: 100%;
+    height: 100vh;
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    position: relative;
-}
-
-.container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Document List 区域 */
+#document-list {
+    flex: 0 0 auto;
+    height: 300px;
+    overflow-y: auto;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 10px;
+}
+
+.document-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 8px;
+    border-radius: 4px;
+}
+
+.document-item:hover {
+    background-color: #f5f5f5;
+}
+
+/* Chat Container 区域 */
+#chat-container {
+    flex: 1;
+    border: none;
     width: 100%;
+}
+
+/* 按钮样式 */
+.btn {
+    padding: 6px 12px;
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s ease;
+    flex: 1;
+    min-width: 100px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn:hover {
+    background-color: #1557b0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.btn:active {
+    background-color: #174ea6;
+    box-shadow: none;
+}
+
+.btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* 按钮变体 */
+.btn-secondary {
+    background-color: #f1f3f4;
+    color: #1a73e8;
+    border: 1px solid #dadce0;
+}
+
+.btn-secondary:hover {
+    background-color: #e8eaed;
+    border-color: #d2d5d9;
+}
+
+.btn-secondary:active {
+    background-color: #dadce0;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+.btn-danger:active {
+    background-color: #bd2130;
+}
+
+/* 加载状态样式 */
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: #666;
+}
+
+/* 错误状态样式 */
+.error {
+    padding: 10px;
+    margin: 10px 0;
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+}
+
+/* 连接状态样式 */
+.connection-status {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.connection-status.connected {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.connection-status.disconnected {
+    background-color: #f8d7da;
+    color: #721c24;
 }
 
 /* 知识库管理区域样式 */
@@ -31,24 +162,6 @@ body {
     flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 12px;
-}
-
-.btn {
-    padding: 6px 12px;
-    background-color: #1a73e8;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: background-color 0.2s;
-    flex: 1;
-    min-width: 100px;
-    white-space: nowrap;
-}
-
-.btn:hover {
-    background-color: #1557b0;
 }
 
 /* 文件列表样式 */
