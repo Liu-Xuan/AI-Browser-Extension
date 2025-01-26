@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Simple Browser Extension",
+  "version": "1.0.0",
+  "description": "一个简单的浏览器插件，包含文件列表和iframe",
+  "permissions": [
+    "sidePanel",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://172.19.12.146:8888/*"
+  ],
+  "side_panel": {
+    "default_path": "panel.html"
+  },
+  "icons": {
+    "16": "assets/icon16.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
+  }
+} 
