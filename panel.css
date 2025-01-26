@@ -148,6 +148,23 @@ body {
     text-align: right;    /* 文本右对齐 */
 }
 
+/* 删除按钮样式 */
+.delete-btn {
+    padding: 4px 8px;     /* 内边距：上下4像素，左右8像素 */
+    border: none;         /* 移除边框 */
+    background: none;     /* 移除背景 */
+    color: #666;         /* 文字颜色为灰色 */
+    cursor: pointer;     /* 鼠标指针变为手型 */
+    font-size: 16px;    /* 字体大小16像素 */
+    transition: color 0.2s;  /* 颜色变化添加0.2秒过渡动画 */
+    margin-left: 8px;    /* 左边距8像素 */
+}
+
+/* 删除按钮悬停效果 */
+.delete-btn:hover {
+    color: #dc3545;     /* 悬停时文字变为红色 */
+}
+
 /* =============== iframe容器样式 =============== */
 /* RAGFlow Chat iframe的容器样式 */
 .iframe-container {

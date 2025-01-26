@@ -93,6 +93,7 @@ function renderFileList() {
                 <div class="file-info">
                     <span class="file-size">${formatFileSize(file.size)}</span>
                     <span class="file-date">${new Date(file.create_time).toLocaleDateString()}</span>
+                    <button class="delete-btn" data-id="${file.id}">-</button>
                 </div>
             </div>
         `).join('');  // 使用map生成HTML字符串并合并
@@ -194,17 +195,66 @@ function addFile(file) {
 }
 
 // 删除文件：从状态中移除文件并更新显示
-window.deleteFile = async function(fileId) {
+async function deleteFile(fileId) {
     try {
-        // TODO: 这里可以添加调用RAGFlow API删除文件的逻辑
+        // 检查是否有知识库ID
+        if (!state.datasetId) {
+            await getDatasetId();
+        }
+
+        // 发送DELETE请求删除文件
+        const response = await fetch(`${RAGFLOW_CONFIG.BASE_URL}/api/v1/datasets/${state.datasetId}/documents`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${RAGFLOW_CONFIG.API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                ids: [fileId]  // 将文件ID包装在数组中
+            })
+        });
+
+        // 检查响应状态码
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+
+        const data = await response.json();
+        console.log('删除响应:', data);  // 添加调试日志
         
-        // 从状态中过滤掉要删除的文件
-        state.files = state.files.filter(f => f.id !== fileId);
-        // 重新渲染文件列表
-        renderFileList();
+        // 检查API响应状态
+        if (data.code === 0) {  // RAGFlow API成功状态码为0
+            // 从状态中过滤掉已删除的文件
+            state.files = state.files.filter(f => f.id !== fileId);
+            // 重新渲染文件列表
+            renderFileList();
+            // 显示成功提示
+            alert('文件删除成功');
+        } else {
+            throw new Error(data.message || '删除文件失败');
+        }
     } catch (error) {
         // 错误处理
         console.error('删除文件失败:', error);
-        alert('删除文件失败');
+        // 如果是网络错误，尝试重新获取文件列表
+        if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+            await fetchFileList();  // 刷新文件列表
+        }
+        alert('删除文件失败: ' + error.message);
     }
-}; 
+}
+
+// 添加事件委托，处理删除按钮点击
+elements.fileList.addEventListener('click', async (event) => {
+    // 检查是否点击了删除按钮
+    if (event.target.matches('.delete-btn')) {
+        const fileId = event.target.dataset.id;
+        if (fileId) {
+            // 添加删除确认
+            if (confirm('确定要删除这个文件吗？')) {
+                await deleteFile(fileId);
+            }
+        }
+    }
+}); 
