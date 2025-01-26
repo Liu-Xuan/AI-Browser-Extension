@@ -1,12 +1,6 @@
-这个是api接口，调qwen2.5 32Bllm chat（openai 的api方式）：
-    mac studio
-    uid: qwen2.5-32B-MLX
-    url: http://172.19.9.158:9997
-    apikey: sk-sonicjason622
+API Key = ragflow-RkOWJjM2ZhZDFhZTExZWZhYmRmMDI0Mm
+API 服务器地址 = http://172.19.12.146:8888
 
-RAGFlow API(Test3):ragflow-RkOWJjM2ZhZDFhZTExZWZhYmRmMDI0Mm
-API 服务器
-http://172.19.12.146:8888
 sidebar_position: 1 slug: /http_api_reference
 HTTP API Reference
 A complete reference for RAGFlow's RESTful API. Before proceeding, please ensure you have your RAGFlow API key ready for authentication.

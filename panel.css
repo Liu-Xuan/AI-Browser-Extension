@@ -1,0 +1,204 @@
+/* =============== 基础样式重置 =============== */
+/* 重置所有元素的默认样式，确保在不同浏览器中显示一致 */
+* {
+    margin: 0;          /* 移除外边距 */
+    padding: 0;         /* 移除内边距 */
+    box-sizing: border-box;  /* 使用更合理的盒模型，宽度包含内边距和边框 */
+}
+
+/* =============== 页面基础布局 =============== */
+/* 设置页面的基本样式，包括字体、颜色和布局 */
+body {
+    /* 设置字体族，按优先级排列，确保在不同系统上都有合适的字体 */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #333;        /* 设置文字颜色为深灰色 */
+    line-height: 1.5;   /* 设置行高为字体大小的1.5倍 */
+    width: 100%;        /* 宽度占满容器 */
+    height: 100vh;      /* 高度占满视口 */
+    overflow: hidden;   /* 隐藏溢出内容，防止出现滚动条 */
+}
+
+/* =============== 主容器布局 =============== */
+/* 页面的主要容器，使用弹性布局实现垂直排列 */
+.container {
+    display: flex;           /* 使用弹性布局 */
+    flex-direction: column;  /* 垂直方向排列 */
+    height: 100vh;          /* 高度占满视口 */
+    background: white;      /* 背景色设为白色 */
+}
+
+/* =============== 文件列表区域 =============== */
+/* 文件列表的容器区域样式 */
+.file-list-section {
+    flex: 0 0 auto;        /* 固定高度，不伸缩 */
+    padding: 16px;         /* 内边距为16像素 */
+    border-bottom: 1px solid #ddd;  /* 底部添加1像素灰色边框 */
+    background: white;     /* 背景色设为白色 */
+}
+
+/* =============== 头部区域样式 =============== */
+/* 包含标题和上传按钮的头部区域 */
+.header {
+    display: flex;         /* 使用弹性布局 */
+    justify-content: space-between;  /* 两端对齐 */
+    align-items: center;   /* 垂直居中对齐 */
+    margin-bottom: 16px;   /* 底部外边距16像素 */
+}
+
+/* 标题样式 */
+.header h3 {
+    font-size: 16px;      /* 字体大小16像素 */
+    color: #333;          /* 文字颜色为深灰色 */
+}
+
+/* =============== 上传按钮样式 =============== */
+/* 文件上传按钮的样式设置 */
+.upload-btn {
+    display: flex;         /* 使用弹性布局 */
+    align-items: center;   /* 垂直居中对齐 */
+    gap: 6px;             /* 元素间距6像素 */
+    padding: 8px 12px;    /* 内边距：上下8像素，左右12像素 */
+    border: none;         /* 移除边框 */
+    border-radius: 4px;   /* 圆角4像素 */
+    background: #1976D2;  /* 背景色为蓝色 */
+    color: white;        /* 文字颜色为白色 */
+    cursor: pointer;     /* 鼠标指针变为手型 */
+    font-size: 14px;     /* 字体大小14像素 */
+    transition: all 0.2s; /* 所有属性变化添加0.2秒过渡动画 */
+}
+
+/* 上传按钮悬停效果 */
+.upload-btn:hover:not(:disabled) {
+    background: #1565C0;  /* 悬停时背景色变深 */
+}
+
+/* 上传按钮禁用状态 */
+.upload-btn:disabled {
+    background: #90caf9;   /* 禁用时背景色变浅 */
+    cursor: not-allowed;   /* 鼠标指针变为禁止 */
+    opacity: 0.7;         /* 降低透明度 */
+}
+
+/* =============== 文件列表样式 =============== */
+/* 文件列表容器的样式 */
+.file-list {
+    border: 1px solid #ddd;  /* 1像素灰色边框 */
+    border-radius: 4px;      /* 圆角4像素 */
+    max-height: 200px;       /* 最大高度200像素 */
+    overflow-y: auto;        /* 垂直方向可滚动 */
+    background: #f5f5f5;     /* 背景色为浅灰色 */
+}
+
+/* 空文件列表提示样式 */
+.empty-message {
+    text-align: center;     /* 文本居中 */
+    padding: 16px;          /* 内边距16像素 */
+    color: #666;           /* 文字颜色为灰色 */
+    font-style: italic;    /* 斜体字 */
+}
+
+/* =============== 文件列表项样式 =============== */
+/* 单个文件项的样式 */
+.file-item {
+    display: flex;          /* 使用弹性布局 */
+    justify-content: space-between;  /* 两端对齐 */
+    align-items: center;    /* 垂直居中对齐 */
+    padding: 12px;          /* 内边距12像素 */
+    border-bottom: 1px solid #ddd;  /* 底部1像素灰色边框 */
+    background: white;      /* 背景色为白色 */
+    transition: background-color 0.2s;  /* 背景色变化添加0.2秒过渡动画 */
+}
+
+/* 文件项悬停效果 */
+.file-item:hover {
+    background-color: #f8f9fa;  /* 悬停时背景色变浅 */
+}
+
+/* 最后一个文件项样式 */
+.file-item:last-child {
+    border-bottom: none;    /* 移除最后一项的底部边框 */
+}
+
+/* =============== 文件信息样式 =============== */
+/* 文件名称样式 */
+.file-name {
+    font-size: 14px;       /* 字体大小14像素 */
+    color: #333;           /* 文字颜色为深灰色 */
+    flex: 1;               /* 占用剩余空间 */
+    margin-right: 12px;    /* 右边距12像素 */
+}
+
+/* 文件信息容器样式 */
+.file-info {
+    display: flex;         /* 使用弹性布局 */
+    gap: 12px;            /* 元素间距12像素 */
+    font-size: 12px;      /* 字体大小12像素 */
+    color: #666;          /* 文字颜色为灰色 */
+}
+
+/* 文件大小样式 */
+.file-size {
+    min-width: 70px;      /* 最小宽度70像素 */
+    text-align: right;    /* 文本右对齐 */
+}
+
+/* 文件日期样式 */
+.file-date {
+    min-width: 80px;      /* 最小宽度80像素 */
+    text-align: right;    /* 文本右对齐 */
+}
+
+/* 删除按钮样式 */
+.delete-btn {
+    padding: 4px 8px;     /* 内边距：上下4像素，左右8像素 */
+    border: none;         /* 移除边框 */
+    background: none;     /* 移除背景 */
+    color: #666;         /* 文字颜色为灰色 */
+    cursor: pointer;     /* 鼠标指针变为手型 */
+    font-size: 16px;    /* 字体大小16像素 */
+    transition: color 0.2s;  /* 颜色变化添加0.2秒过渡动画 */
+    margin-left: 8px;    /* 左边距8像素 */
+}
+
+/* 删除按钮悬停效果 */
+.delete-btn:hover {
+    color: #dc3545;     /* 悬停时文字变为红色 */
+}
+
+/* =============== iframe容器样式 =============== */
+/* RAGFlow Chat iframe的容器样式 */
+.iframe-container {
+    flex: 1;              /* 占用剩余空间 */
+    min-height: 0;        /* 最小高度为0 */
+    background: white;    /* 背景色为白色 */
+}
+
+/* iframe样式 */
+#chatIframe {
+    width: 100%;         /* 宽度占满容器 */
+    height: 100%;        /* 高度占满容器 */
+    border: none;        /* 移除边框 */
+    background: white;   /* 背景色为白色 */
+}
+
+/* =============== 滚动条样式 =============== */
+/* 自定义滚动条的样式，使其更美观 */
+::-webkit-scrollbar {
+    width: 6px;          /* 滚动条宽度6像素 */
+}
+
+/* 滚动条轨道样式 */
+::-webkit-scrollbar-track {
+    background: #f1f1f1;  /* 轨道背景色为浅灰色 */
+}
+
+/* 滚动条滑块样式 */
+::-webkit-scrollbar-thumb {
+    background: #888;     /* 滑块背景色为灰色 */
+    border-radius: 3px;   /* 圆角3像素 */
+}
+
+/* 滚动条滑块悬停效果 */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;     /* 悬停时背景色变深 */
+} 

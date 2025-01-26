@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Simple Browser Extension",
+  "version": "1.0",
+  "description": "一个简单的浏览器插件，包含侧边栏",
+  "permissions": [
+    "sidePanel",
+    "scripting"
+  ],
+  "side_panel": {
+    "default_path": "panel.html"
+  }
+} 
